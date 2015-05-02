@@ -1,5 +1,7 @@
 ; Restrictions
 
+(require 'font-lock)
+
 (global-font-lock-mode nil)
 (custom-set-variables
  '(global-hi-lock-mode nil)
@@ -9,6 +11,7 @@
 ; Goodies
 
 (require 'uniquify)
+(require 'dired)
 (require 'ls-lisp)
 
 (setenv "EMACS" "true")
@@ -35,6 +38,7 @@
  '(c-offsets-alist nil)
  '(c-basic-offset 8)
  '(c-backspace-function 'backward-delete-char)
+ '(c-electric-flag nil)
  '(tab-width 8)
  '(indent-tabs-mode nil)
  '(column-number-mode t)
@@ -50,6 +54,7 @@
  '(mark-even-if-inactive t)
  '(menu-bar-mode nil)
  '(tool-bar-mode nil)
+ '(require-final-newline nil)
  '(enable-local-variables :all)
  '(same-window-buffer-names (quote ("*shell*" "*mail*" "*inferior-lisp*" "*Buffer List*" "*Async Shell Command*")))
  '(scroll-bar-mode (quote left))
@@ -59,16 +64,30 @@
  '(show-paren-mode t)
  '(transient-mark-mode t)
  '(truncate-lines t)
+ '(initial-scratch-message "; M-x lisp-interaction-mode\n; C-j to evaluate\n\n")
+ '(require-final-newline nil)
+ '(mode-require-final-newline nil)
+ '(cursor-type 'bar)
 )
 (global-set-key (kbd "DEL") 'backward-delete-char)
 (global-set-key (kbd "TAB") 'self-insert-command)
 (global-set-key [(ctrl z)] 'undo)
 (global-set-key "\M-n" '(lambda () (interactive) (scroll-up 1)))
 (global-set-key "\M-p" '(lambda () (interactive) (scroll-down 1)))
+(global-set-key [(control tab)] 'other-window)
 (global-set-key [(control down)] '(lambda () (interactive) (scroll-up 1)))
 (global-set-key [(control up)] '(lambda () (interactive) (scroll-down 1)))
 (global-set-key [(meta down)] '(lambda () (interactive) (scroll-up 1)))
 (global-set-key [(meta up)] '(lambda () (interactive) (scroll-down 1)))
+
+;;(defvar just-tab-keymap (make-sparse-keymap) "Keymap for just-tab-mode")
+;;(define-minor-mode just-tab-mode
+;;   "Just want the TAB key to be a TAB"
+;;   :global t :lighter " TAB" :init-value 0 :keymap just-tab-keymap
+;;   (define-key just-tab-keymap (kbd "TAB") 'indent-for-tab-command))
+;;(eval-after-load "cc-mode"  '(define-key c-mode-map (kbd "TAB") 'self-insert-command))
+;;(eval-after-load "c++-mode" '(define-key c++-mode-map (kbd "TAB") 'self-insert-command))
+
 
 ; Fat
 
@@ -97,6 +116,34 @@
 )
 (global-set-key [f9] 'test)
 
+; alias c='eval cd `cat ~/cwd`'
+(defun dired-export-cwd ()
+  (interactive)
+  (with-temp-file "~/cwd"
+    (insert default-directory))
+)
+(define-key dired-mode-map "c" 'dired-export-cwd)
+
+(defun pt-pbpaste ()
+  "Paste data from pasteboard."
+  (interactive)
+  (shell-command-on-region
+   (point)
+   (if mark-active (mark) (point))
+   "pbpaste" nil t)
+)
+(defun pt-pbcopy ()
+  "Copy region to pasteboard."
+  (interactive)
+  (print (mark))
+  (when mark-active
+    (shell-command-on-region
+     (point) (mark) "pbcopy")
+    (kill-buffer "*Shell Command Output*"))
+)
+(global-set-key [?\C-x ?\C-y] 'pt-pbpaste)
+(global-set-key [?\C-x ?\M-w] 'pt-pbcopy)
+
 (defun autocompile nil
   (interactive)
   (require 'bytecomp)
@@ -122,3 +169,4 @@
 
 (put 'scroll-left 'disabled nil)
 (put 'set-goal-column 'disabled nil)
+(put 'narrow-to-region 'disabled nil)
