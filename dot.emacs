@@ -4,7 +4,7 @@
 
 (global-font-lock-mode nil)
 (custom-set-variables
- '(global-hi-lock-mode nil)
+ ;'(global-hi-lock-mode nil)
  '(vc-handled-backends nil)
 )
 
